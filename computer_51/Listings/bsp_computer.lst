@@ -1,0 +1,223 @@
+C51 COMPILER V9.57.0.0   BSP_COMPUTER                                                      12/22/2022 17:28:40 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE BSP_COMPUTER
+OBJECT MODULE PLACED IN .\Objects\bsp_computer.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE Hardware\src\bsp_computer.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardwar
+                    -e\inc;..\computer_51) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_computer.lst) TABS(2) OBJECT(.\Objects\bsp_computer.obj)
+
+line level    source
+
+   1          #include "bsp_computer.h"
+   2          
+   3          void init_data_stack(Data_Stack *ptr)
+   4          {
+   5   1          ptr->top = -1;
+   6   1      }
+   7          void init_symbol_stack(Symbol_Stack *ptr)
+   8          {
+   9   1          ptr->top = -1;
+  10   1      }
+  11          void push_data_stack(Data_Stack *ptr, Data_Type num)
+  12          {
+  13   1          ptr->top++;
+  14   1          ptr->bsp_data[ptr->top] = num;
+  15   1      }
+  16          Data_Type pop_data_stack(Data_Stack *ptr)
+  17          {
+  18   1          Data_Type num;
+  19   1          num = ptr->bsp_data[ptr->top];
+  20   1          ptr->top--;
+  21   1          return num;
+  22   1      }
+  23          void push_symbol_stack(Symbol_Stack *ptr, char symbol)
+  24          {
+  25   1          ptr->top++;
+  26   1          ptr->symbol[ptr->top] = symbol;
+  27   1      }
+  28          char pop_symbol_stack(Symbol_Stack *ptr)
+  29          {
+  30   1          char symbol = ptr->symbol[ptr->top];
+  31   1          ptr->top--;
+  32   1          return symbol;
+  33   1      }
+  34          char check_symbol_stack(Symbol_Stack *ptr)
+  35          {
+  36   1          char symbol = ptr->symbol[ptr->top];
+  37   1          return symbol;
+  38   1      }
+  39          
+  40          int judge(char ch)
+  41          {
+  42   1          switch (ch)
+  43   1          {
+  44   2          case '(':
+  45   2              return 1;
+  46   2              break;
+  47   2          case '+':
+  48   2          case '-':
+  49   2              return 2;
+  50   2              break;
+  51   2          case '*':
+  52   2          case '/':
+  53   2              return 3;
+  54   2              break;
+C51 COMPILER V9.57.0.0   BSP_COMPUTER                                                      12/22/2022 17:28:40 PAGE 2   
+
+  55   2          }
+  56   1      }
+  57          
+  58          double compute(double a, double b, char sign)
+  59          {
+  60   1          if (sign == '+')
+  61   1              return a + b;
+  62   1          if (sign == '-')
+  63   1              return b - a;
+  64   1          if (sign == '*')
+  65   1              return a * b;
+  66   1          if (sign == '/')
+  67   1              return b / a;
+  68   1      }
+  69          
+  70          double stringToDouble(char a[])
+  71          {
+  72   1          int i = 0;
+  73   1          char p[MAX_DOUBLE_DATA];
+  74   1          int top = 0;
+  75   1          double sum = 0;
+  76   1          double mul = 1;
+  77   1          while (a[i] != '\0' && a[i] != '.')
+  78   1          {
+  79   2              p[top] = a[i];
+  80   2              top++;
+  81   2              i++;
+  82   2          }
+  83   1          while (top != 0)
+  84   1          {
+  85   2              top--;
+  86   2              sum = sum + (p[top] - '0') * mul;
+  87   2              mul = mul * 10;
+  88   2          }
+  89   1          if (a[i] == '.')
+  90   1          {
+  91   2              i++;
+  92   2              mul = 0.1;
+  93   2              while (a[i] != '\0')
+  94   2              {
+  95   3                  sum = sum + (a[i] - 48) * mul;
+  96   3                  mul = mul / 10;
+  97   3                  i++;
+  98   3              }
+  99   2          }
+ 100   1          return sum;
+ 101   1      }
+ 102          double intoresult(char *exp, Data_Stack *data_stack, Symbol_Stack *symbol_stack)
+ 103          {
+ 104   1          int str_read = 0, str_write = 0;
+ 105   1          int length = 0;
+ 106   1          int str_start = 0; // when cut string use it as start flag
+ 107   1          double str_temp_double;
+ 108   1          DAS L[MAD_EXP_LEN];
+ 109   1          int L_index = 0;
+ 110   1          int L_indexlast = 0;
+ 111   1      
+ 112   1          char str_temp[MAX_DOUBLE_DATA];
+ 113   1          while (exp[str_read] != '\0')
+ 114   1          {
+ 115   2              if (exp[str_read] >= '0' && exp[str_read] <= '9' || exp[str_read] == '.') // num
+ 116   2              {
+C51 COMPILER V9.57.0.0   BSP_COMPUTER                                                      12/22/2022 17:28:40 PAGE 3   
+
+ 117   3                  length = 0;
+ 118   3                  str_start = str_read; // start pos
+ 119   3                  while (exp[str_read] >= '0' && exp[str_read] <= '9' || exp[str_read] == '.')
+ 120   3                  {
+ 121   4                      str_read++;
+ 122   4                      length++;
+ 123   4                  }
+ 124   3                  strncpy(str_temp, exp + str_start, length);
+ 125   3                  str_temp[length] = '\0';
+ 126   3                  str_temp_double = stringToDouble(str_temp);
+ 127   3                  L[L_index].bsp_data = str_temp_double;
+ 128   3                  L[L_index].flag = 0;
+ 129   3                  L_index++;
+ 130   3                  // push_data_stack(data_stack, str_temp_double);
+ 131   3              }
+ 132   2              else // symbol
+ 133   2              {
+ 134   3                  if (symbol_stack->top == -1)
+ 135   3                  {
+ 136   4                      push_symbol_stack(symbol_stack, exp[str_read]);
+ 137   4                  }
+ 138   3                  else if (exp[str_read] == '(') // push!
+ 139   3                  {
+ 140   4                      push_symbol_stack(symbol_stack, exp[str_read]);
+ 141   4                  }
+ 142   3                  else if (exp[str_read] == ')')
+ 143   3                  {
+ 144   4                      while (check_symbol_stack(symbol_stack) != '(')
+ 145   4                      {
+ 146   5                          char compare_temp = pop_symbol_stack(symbol_stack);
+ 147   5                          L[L_index].sym = compare_temp;
+ 148   5                          L[L_index].flag = 1;
+ 149   5                          L_index++;
+ 150   5                      }
+ 151   4                      pop_symbol_stack(symbol_stack); // pop (
+ 152   4                  }
+ 153   3                  else
+ 154   3                  {
+ 155   4                      while (judge(exp[str_read]) <= judge(check_symbol_stack(symbol_stack)))
+ 156   4                      {
+ 157   5                          char compare_temp = pop_symbol_stack(symbol_stack);
+ 158   5                          L[L_index].sym = compare_temp;
+ 159   5                          L[L_index].flag = 1;
+ 160   5                          L_index++;
+ 161   5                      }
+ 162   4                      push_symbol_stack(symbol_stack, exp[str_read]);
+ 163   4                  }
+ 164   3                  str_read++;
+ 165   3              }
+ 166   2          }
+ 167   1          while (symbol_stack->top != -1)
+ 168   1          {
+ 169   2              char compare_temp = pop_symbol_stack(symbol_stack);
+ 170   2              L[L_index].sym = compare_temp;
+ 171   2              L[L_index].flag = 1;
+ 172   2              L_index++;
+ 173   2          }
+ 174   1          for (L_indexlast = 0; L_indexlast < L_index; L_indexlast++)
+ 175   1          {
+ 176   2              if (L[L_indexlast].flag == 1)
+ 177   2              {
+ 178   3                  char sign = L[L_indexlast].sym;
+C51 COMPILER V9.57.0.0   BSP_COMPUTER                                                      12/22/2022 17:28:40 PAGE 4   
+
+ 179   3                  double a = pop_data_stack(data_stack);
+ 180   3                  double b = pop_data_stack(data_stack);
+ 181   3                  double c = compute(a, b, sign);
+ 182   3                  push_data_stack(data_stack, c);
+ 183   3              }
+ 184   2              else
+ 185   2              {
+ 186   3                  push_data_stack(data_stack, L[L_indexlast].bsp_data);
+ 187   3              }
+ 188   2          }
+ 189   1          return pop_data_stack(data_stack);
+ 190   1      
+ 191   1      }
+*** WARNING C291 IN LINE 56 OF Hardware\src\bsp_computer.c: not every exit path returns a value
+*** WARNING C291 IN LINE 68 OF Hardware\src\bsp_computer.c: not every exit path returns a value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2059    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----     329
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

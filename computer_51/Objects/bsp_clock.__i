@@ -1,0 +1,1 @@
+"Hardware\src\bsp_clock.c" LARGE OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Hardware\inc;..\computer_51) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_clock.lst) TABS (2) OBJECT(.\Objects\bsp_clock.obj)

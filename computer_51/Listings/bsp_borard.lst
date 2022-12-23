@@ -1,0 +1,214 @@
+C51 COMPILER V9.57.0.0   BSP_BORARD                                                        12/23/2022 01:00:27 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE BSP_BORARD
+OBJECT MODULE PLACED IN .\Objects\bsp_borard.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE Hardware\src\bsp_borard.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardware\
+                    -inc;..\computer_51) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_borard.lst) TABS(2) OBJECT(.\Objects\bsp_borard.obj)
+
+line level    source
+
+   1          #include "bsp_board.h"
+   2          
+   3          char scan_board(void)
+   4          {
+   5   1          int flag = 0;
+   6   1          char ch;
+   7   1          uint8_t temp;
+   8   1      
+   9   1          P1 &= 0x0F; // 其他拉低
+  10   1          P1 |= 0x08; // row1拉高
+  11   1          temp = P0;
+  12   1          temp &= 0x0F; // 掩去高四位
+  13   1          switch (temp)
+  14   1          {
+  15   2          case 0x01:
+  16   2              flag = 1;
+  17   2              ch = '0';
+  18   2              break;
+  19   2          case 0x02:
+  20   2              flag = 1;
+  21   2              ch = '1';
+  22   2              break;
+  23   2          case 0x04:
+  24   2              flag = 1;
+  25   2              ch = '4';
+  26   2              break;
+  27   2          case 0x08:
+  28   2              flag = 1;
+  29   2              ch = '7';
+  30   2              break;
+  31   2          }
+  32   1          if (flag == 1) // 减少一次循环
+  33   1          {
+  34   2              do
+  35   2              {
+  36   3                  temp = P0;
+  37   3                  temp &= 0x0F;
+  38   3              } while (temp != 0x00);
+  39   2      
+  40   2              return ch;
+  41   2          }
+  42   1      #if 1
+  43   1          P1 &= 0x17; // 其他拉低
+  44   1          P1 |= 0x10; // row2拉高
+  45   1          temp = P0;
+  46   1          temp &= 0x0F; // 掩去高四位
+  47   1          switch (temp)
+  48   1          {
+  49   2          case 0x01:
+  50   2              flag = 2;
+  51   2              ch = '.';
+  52   2              break;
+  53   2          case 0x02:
+  54   2              flag = 2;
+C51 COMPILER V9.57.0.0   BSP_BORARD                                                        12/23/2022 01:00:27 PAGE 2   
+
+  55   2              ch = '2';
+  56   2              break;
+  57   2          case 0x04:
+  58   2              flag = 2;
+  59   2              ch = '5';
+  60   2              break;
+  61   2          case 0x08:
+  62   2              flag = 2;
+  63   2              ch = '8';
+  64   2              break;
+  65   2          }
+  66   1          if (flag == 2) // 减少一次循环
+  67   1          {
+  68   2              do
+  69   2              {
+  70   3                  temp = P0;
+  71   3                  temp &= 0x0F;
+  72   3              } while (temp != 0x00);
+  73   2      
+  74   2              return ch;
+  75   2          }
+  76   1      
+  77   1          P1 &= 0x27; // 其他拉低
+  78   1          P1 |= 0x20; // row3拉高
+  79   1          temp = P0;
+  80   1          temp &= 0x0F; // 掩去高四位
+  81   1          switch (temp)
+  82   1          {
+  83   2          case 0x01:
+  84   2              flag = 3;
+  85   2              ch = '=';
+  86   2              break;
+  87   2          case 0x02:
+  88   2              flag = 3;
+  89   2              ch = '4';
+  90   2              break;
+  91   2          case 0x04:
+  92   2              flag = 3;
+  93   2              ch = '6';
+  94   2              break;
+  95   2          case 0x08:
+  96   2              flag = 3;
+  97   2              ch = '9';
+  98   2              break;
+  99   2          }
+ 100   1          if (flag == 3) // 减少一次循环
+ 101   1          {
+ 102   2              do
+ 103   2              {
+ 104   3                  temp = P0;
+ 105   3                  temp &= 0x0F;
+ 106   3              } while (temp != 0x00);
+ 107   2      
+ 108   2              return ch;
+ 109   2          }
+ 110   1      
+ 111   1          P1 &= 0x47; // 其他拉低
+ 112   1          P1 |= 0x40; // row4拉高
+ 113   1          temp = P0;
+ 114   1          temp &= 0x0F; // 掩去高四位
+ 115   1          switch (temp)
+ 116   1          {
+C51 COMPILER V9.57.0.0   BSP_BORARD                                                        12/23/2022 01:00:27 PAGE 3   
+
+ 117   2          case 0x01:
+ 118   2              flag = 4;
+ 119   2              ch = '+';
+ 120   2              break;
+ 121   2          case 0x02:
+ 122   2              flag = 4;
+ 123   2              ch = '-';
+ 124   2              break;
+ 125   2          case 0x04:
+ 126   2              flag = 4;
+ 127   2              ch = '*';
+ 128   2              break;
+ 129   2          case 0x08:
+ 130   2              flag = 4;
+ 131   2              ch = '/';
+ 132   2              break;
+ 133   2          }
+ 134   1          if (flag == 4) // 减少一次循环
+ 135   1          {
+ 136   2              do
+ 137   2              {
+ 138   3                  temp = P0;
+ 139   3                  temp &= 0x0F;
+ 140   3              } while (temp != 0x00);
+ 141   2      
+ 142   2              return ch;
+ 143   2          }
+ 144   1      
+ 145   1          P1 &= 0x87; // 其他拉低
+ 146   1          P1 |= 0x80; // row5拉高
+ 147   1          temp = P0;
+ 148   1          temp &= 0x0F; // 掩去高四位
+ 149   1          switch (temp)
+ 150   1          {
+ 151   2          case 0x01:
+ 152   2              flag = 5;
+ 153   2              ch = 'd';
+ 154   2              break;
+ 155   2          case 0x02:
+ 156   2              flag = 5;
+ 157   2              ch = 'm';
+ 158   2              break;
+ 159   2          case 0x04:
+ 160   2              flag = 5;
+ 161   2              ch = ')';
+ 162   2              break;
+ 163   2          case 0x08:
+ 164   2              flag = 5;
+ 165   2              ch = '(';
+ 166   2              break;
+ 167   2          }
+ 168   1          if (flag == 5) // 减少一次循环
+ 169   1          {
+ 170   2              do
+ 171   2              {
+ 172   3                  temp = P0;
+ 173   3                  temp &= 0x0F;
+ 174   3              } while (temp != 0x00);
+ 175   2      
+ 176   2              return ch;
+ 177   2          }
+ 178   1      #endif
+C51 COMPILER V9.57.0.0   BSP_BORARD                                                        12/23/2022 01:00:27 PAGE 4   
+
+ 179   1          if (flag == 0)
+ 180   1          {
+ 181   2              return '\0';
+ 182   2          }
+ 183   1      }
+*** WARNING C291 IN LINE 183 OF Hardware\src\bsp_borard.c: not every exit path returns a value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    380    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

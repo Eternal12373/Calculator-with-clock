@@ -1,0 +1,409 @@
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE main.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardware\inc;..\computer_51)
+                    - DEBUG OBJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "main.h"
+   2          #include <reg52.h>
+   3          #include "bsp_lcd1603.h"
+   4          #include "bsp_board.h"
+   5          #include "bsp_computer.h"
+   6          #include "bsp_clock.h"
+   7          
+   8          uint8_t hour;
+   9          uint8_t min;
+  10          uint8_t sec;
+  11          int count = 0;
+  12          
+  13          uint8_t disp_table[32];
+  14          uint8_t exp_table[32];
+  15          int disp_index = 0;
+  16          int exp_index = 0;
+  17          double result;
+  18          
+  19          sbit LED = P3 ^ 7;
+  20          
+  21          control_mode control; // 状态机
+  22          
+  23          Data_Stack data_stack;
+  24          Symbol_Stack symbol_stack;
+  25          void delay(int ms);
+  26          char key;
+  27          void main()
+  28          {
+  29   1          clock_init();
+  30   1      
+  31   1      #if 1
+  32   1          mode_init();
+  33   1          lcd_computer_init();
+  34   1      
+  35   1      #endif
+  36   1      #if 1
+  37   1      
+  38   1          while (1)
+  39   1          {
+  40   2              key = scan_board();
+  41   2              set_mode();
+  42   2      
+  43   2              if (control.mode == COMPUTER)
+  44   2              {
+  45   3                  computer_mode_behavior();
+  46   3              }
+  47   2              else if (control.mode == CLOCK)
+  48   2              {
+  49   3                  clock_mode_behavior();
+  50   3              }
+  51   2              change_mode();
+  52   2          }
+  53   1      #endif
+  54   1      }
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 2   
+
+  55          void delay(int ms)
+  56          {
+  57   1          int i, j;
+  58   1          for (i = 0; i < 112; i++)
+  59   1          {
+  60   2              for (j = 0; j < ms; j++)
+  61   2              {
+  62   3                  ;
+  63   3              }
+  64   2          }
+  65   1      }
+  66          
+  67          void mode_init(void)
+  68          {
+  69   1          control.mode = COMPUTER;
+  70   1          control.com_mode = INPUT;
+  71   1          control.clk_mode = RUN;
+  72   1          control.com_next_mode = INPUT;
+  73   1          control.clk_next_mode = RUN;
+  74   1      }
+  75          void set_mode(void)
+  76          {
+  77   1      
+  78   1          if (control.mode == CLOCK)
+  79   1          {
+  80   2              if (key == '=')
+  81   2              {
+  82   3                  control.next_mode = COMPUTER;
+  83   3              }
+  84   2              else
+  85   2              {
+  86   3                  control.next_mode = control.mode;
+  87   3              }
+  88   2          }
+  89   1          else if (control.mode == COMPUTER)
+  90   1          {
+  91   2              static computer_flag = 1;
+  92   2              if (computer_flag)
+  93   2              {
+  94   3                  computer_flag=0;
+  95   3                  clear_screen();
+  96   3                  disp_index = 0;
+  97   3                  exp_index = 0;
+  98   3              }
+  99   2              write_com(0x0f); // 0x0f 用于计算器，0x0c用于时钟 光标和闪烁
+ 100   2              if (key == 'm')
+ 101   2              {
+ 102   3                  computer_flag=1;
+ 103   3                  control.next_mode = CLOCK;
+ 104   3              }
+ 105   2              else
+ 106   2              {
+ 107   3                  control.next_mode = control.mode;
+ 108   3              }
+ 109   2          }
+ 110   1      }
+ 111          void clock_mode_behavior(void)
+ 112          {
+ 113   1      
+ 114   1          if (control.clk_mode == RUN)
+ 115   1          {
+ 116   2              static int run_flag = 1;
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 3   
+
+ 117   2              write_com(0x0c);
+ 118   2              if (run_flag)
+ 119   2              {
+ 120   3                  clear_screen();
+ 121   3      
+ 122   3                  write_address(0x48);
+ 123   3                  write_date('R');
+ 124   3                  write_date('U');
+ 125   3                  write_date('N');
+ 126   3                  run_flag = 0;
+ 127   3              }
+ 128   2      
+ 129   2              display_clock();
+ 130   2              if (key == '/')
+ 131   2              {
+ 132   3                  control.clk_next_mode = PAUSE;
+ 133   3                  run_flag = 1;
+ 134   3              }
+ 135   2              else
+ 136   2              {
+ 137   3                  control.clk_next_mode = control.clk_mode;
+ 138   3              }
+ 139   2          }
+ 140   1          else if (control.clk_mode == PAUSE)
+ 141   1          {
+ 142   2              static int pause_flag = 1;
+ 143   2              if (pause_flag)
+ 144   2              {
+ 145   3                  write_com(0x0c);
+ 146   3      
+ 147   3                  write_address(0x48);
+ 148   3                  write_date('P');
+ 149   3                  write_date('A');
+ 150   3                  write_date('U');
+ 151   3                  write_date('S');
+ 152   3                  write_date('E');
+ 153   3                  pause_flag = 0;
+ 154   3              }
+ 155   2      
+ 156   2              if (key == '/')
+ 157   2              {
+ 158   3                  control.clk_next_mode = RUN;
+ 159   3                  pause_flag = 1;
+ 160   3              }
+ 161   2              else if (key == '*')
+ 162   2              {
+ 163   3                  control.clk_next_mode = CLEAR;
+ 164   3                  pause_flag = 1;
+ 165   3              }
+ 166   2              else if (key == '-')
+ 167   2              {
+ 168   3                  control.clk_next_mode = SETNUM;
+ 169   3                  pause_flag = 1;
+ 170   3              }
+ 171   2              else
+ 172   2              {
+ 173   3                  control.clk_next_mode = control.clk_mode;
+ 174   3              }
+ 175   2          }
+ 176   1          else if (control.clk_mode == CLEAR)
+ 177   1          {
+ 178   2              sec = min = hour = 0;
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 4   
+
+ 179   2              display_clock();
+ 180   2              control.clk_next_mode = PAUSE;
+ 181   2          }
+ 182   1          else if (control.clk_mode == SETNUM)
+ 183   1          {
+ 184   2              static int a, b, c, d, e, f;
+ 185   2              static int cursor = 1;
+ 186   2              static int set_flag = 1;
+ 187   2              if (set_flag) // 第一次进入 保存数据
+ 188   2              {
+ 189   3                  clear_screen();
+ 190   3      
+ 191   3                  a = hour / 10;
+ 192   3                  b = hour % 10;
+ 193   3                  c = min / 10;
+ 194   3                  d = min % 10;
+ 195   3                  e = sec / 10;
+ 196   3                  f = sec % 10;
+ 197   3      
+ 198   3                  cursor = 1;
+ 199   3                  set_flag = 0;
+ 200   3      
+ 201   3                  display_set_clock(a, b, c, d, e, f);
+ 202   3                  write_address(0x48);
+ 203   3                  write_date('S');
+ 204   3                  write_date('E');
+ 205   3                  write_date('T');
+ 206   3      
+ 207   3                  write_com(0x0f);
+ 208   3                  back_home();
+ 209   3              }
+ 210   2      
+ 211   2              if (key == '(')
+ 212   2              {
+ 213   3                  if (cursor % 2 != 0) // 多移动一个：
+ 214   3                  {
+ 215   4                      move_cursor_left(2);
+ 216   4                  }
+ 217   3                  else
+ 218   3                  {
+ 219   4                      move_cursor_left(1);
+ 220   4                  }
+ 221   3                  cursor -= 1;
+ 222   3              }
+ 223   2              if (key == ')')
+ 224   2              {
+ 225   3                  if (cursor % 2 == 0)
+ 226   3                  {
+ 227   4                      move_cursor_right(2);
+ 228   4                  }
+ 229   3                  else
+ 230   3                  {
+ 231   4                      move_cursor_right(1);
+ 232   4                  }
+ 233   3                  cursor += 1;
+ 234   3              }
+ 235   2      
+ 236   2              if (key >= '0' && key <= '9')
+ 237   2              {
+ 238   3                  switch (cursor)
+ 239   3                  {
+ 240   4                  case 1:
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 5   
+
+ 241   4                      a = key - '0';
+ 242   4                      break;
+ 243   4                  case 2:
+ 244   4                      b = key - '0';
+ 245   4                      break;
+ 246   4                  case 3:
+ 247   4                      c = key - '0';
+ 248   4                      break;
+ 249   4                  case 4:
+ 250   4                      d = key - '0';
+ 251   4                      break;
+ 252   4                  case 5:
+ 253   4                      e = key - '0';
+ 254   4                      break;
+ 255   4                  case 6:
+ 256   4                      f = key - '0';
+ 257   4                      break;
+ 258   4                  }
+ 259   3                  display_set_clock(a, b, c, d, e, f);
+ 260   3      
+ 261   3                  back_home();
+ 262   3                  delay(10); // 这里要加延时，否则move无效，且有报警
+ 263   3                  if (cursor <= 2)
+ 264   3                      move_cursor_right(cursor - 1);
+ 265   3                  else if (cursor >= 3 && cursor <= 4)
+ 266   3                      move_cursor_right(cursor);
+ 267   3                  else
+ 268   3                      move_cursor_right(cursor + 1);
+ 269   3              }
+ 270   2      
+ 271   2              // mode change
+ 272   2              if (key == '-')
+ 273   2              {
+ 274   3                  hour = a * 10 + b;
+ 275   3                  min = c * 10 + d;
+ 276   3                  sec = e * 10 + f;
+ 277   3                  set_flag = 1;
+ 278   3                  control.clk_next_mode = PAUSE;
+ 279   3              }
+ 280   2              else
+ 281   2              {
+ 282   3                  control.clk_next_mode = control.clk_mode;
+ 283   3              }
+ 284   2              LED = 0;
+ 285   2          }
+ 286   1      }
+ 287          void computer_mode_behavior(void)
+ 288          {
+ 289   1          if (control.com_mode == INPUT)
+ 290   1          {
+ 291   2              if (key != '\0' && key != '=' && key != 'd')
+ 292   2              {
+ 293   3                  disp_table[disp_index++] = key;
+ 294   3                  disp_table[disp_index] = '\0';
+ 295   3                  display(disp_table, sizeof(disp_table));
+ 296   3                  control.com_next_mode = control.com_mode;
+ 297   3              }
+ 298   2              else if (key == 'd')
+ 299   2              {
+ 300   3                  disp_index--;
+ 301   3                  disp_table[disp_index] = '\0';
+ 302   3                  display(disp_table, sizeof(disp_table));
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 6   
+
+ 303   3              }
+ 304   2              else if (key == '=') // 状态转换
+ 305   2              {
+ 306   3                  control.com_next_mode = CALCULATE;
+ 307   3              }
+ 308   2          }
+ 309   1          else if (control.com_mode == CALCULATE)
+ 310   1          {
+ 311   2              init_data_stack(&data_stack); // init the stack
+ 312   2              init_symbol_stack(&symbol_stack);
+ 313   2              result = intoresult(disp_table, &data_stack, &symbol_stack);
+ 314   2              sprintf(exp_table, "%.3f", result);
+ 315   2              clear_screen();
+ 316   2              display(exp_table, 7);
+ 317   2              control.com_next_mode = CALEND;
+ 318   2          }
+ 319   1          else if (control.com_mode == CALEND)
+ 320   1          {
+ 321   2              if (key == '=')
+ 322   2              {
+ 323   3                  clear_screen();
+ 324   3                  disp_index = 0;
+ 325   3                  exp_index = 0;
+ 326   3      
+ 327   3                  control.com_next_mode = INPUT;
+ 328   3              }
+ 329   2              else
+ 330   2              {
+ 331   3                  control.com_next_mode = control.com_mode;
+ 332   3              }
+ 333   2          }
+ 334   1      }
+ 335          
+ 336          void change_mode()
+ 337          {
+ 338   1          control.mode = control.next_mode;
+ 339   1          control.com_mode = control.com_next_mode;
+ 340   1          control.clk_mode = control.clk_next_mode;
+ 341   1      }
+ 342          
+ 343          void Timer0() interrupt 1
+ 344          {
+ 345   1          TH0 = (65536 - 60000) / 256;
+ 346   1          TL0 = (65536 - 60000) % 256;
+ 347   1          TR0 = 1;
+ 348   1          count++;
+ 349   1          if (count >= 15)
+ 350   1          {
+ 351   2              count = 0;
+ 352   2              if (control.mode == CLOCK && control.clk_mode == RUN) // control.mode == CLOCK && control.clk_mode
+             - == RUN
+ 353   2              {
+ 354   3      
+ 355   3                  sec++;
+ 356   3                  if (sec >= 60)
+ 357   3                  {
+ 358   4                      sec = 0;
+ 359   4                      min++;
+ 360   4                      if (min >= 60)
+ 361   4                      {
+ 362   5                          min = 0;
+ 363   5                          hour++;
+C51 COMPILER V9.57.0.0   MAIN                                                              12/23/2022 10:25:16 PAGE 7   
+
+ 364   5                          if (hour >= 24)
+ 365   5                          {
+ 366   6                              hour = 0;
+ 367   6                          }
+ 368   5                      }
+ 369   4                  }
+ 370   3              }
+ 371   2          }
+ 372   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1654    ----
+   CONSTANT SIZE    =      5    ----
+   XDATA SIZE       =    270    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

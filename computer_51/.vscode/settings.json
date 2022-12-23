@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "bsp_lcd1603.h": "c",
+        "main.h": "c",
+        "intrin.h": "c",
+        "intrins.h": "c",
+        "bsp_board.h": "c",
+        "bsp_computer.h": "c",
+        "bsp_clock.h": "c"
+    }
+}

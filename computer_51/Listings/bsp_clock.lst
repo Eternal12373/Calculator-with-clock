@@ -1,0 +1,82 @@
+C51 COMPILER V9.57.0.0   BSP_CLOCK                                                         12/23/2022 01:00:27 PAGE 1   
+
+
+C51 COMPILER V9.57.0.0, COMPILATION OF MODULE BSP_CLOCK
+OBJECT MODULE PLACED IN .\Objects\bsp_clock.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE Hardware\src\bsp_clock.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Hardware\i
+                    -nc;..\computer_51) DEBUG OBJECTEXTEND PRINT(.\Listings\bsp_clock.lst) TABS(2) OBJECT(.\Objects\bsp_clock.obj)
+
+line level    source
+
+   1          #include "bsp_clock.h"
+   2          
+   3          extern uint8_t sec;
+   4          extern uint8_t min;
+   5          extern uint8_t hour;
+   6          
+   7          extern control_mode control;
+   8          sbit led = P0 ^ 6;
+   9          void clock_init()
+  10          {
+  11   1          TMOD = 0x01;
+  12   1          TH0 = (65536 - 60000) / 256;
+  13   1          TL0 = (65536 - 60000) % 256;
+  14   1          EA = 1;
+  15   1          ET0 = 1;
+  16   1          TR0 = 1;
+  17   1      }
+  18          
+  19          void display_clock(void)
+  20          {
+  21   1          char str[15];
+  22   1          str[0] = '0' + hour / 10;
+  23   1          str[1] = '0' + hour % 10;
+  24   1          str[2] = ':';
+  25   1          str[3] = '0' + min / 10;
+  26   1          str[4] = '0' + min % 10;
+  27   1          str[5] = ':';
+  28   1          str[6] = '0' + sec / 10;
+  29   1          str[7] = '0' + sec % 10;
+  30   1          str[8] = '\0';
+  31   1          display(str, 15);
+  32   1      }
+  33          void display_set_clock(int a, int b, int c, int d, int e, int f)
+  34          {
+  35   1          int i = 0;
+  36   1          char str[15];
+  37   1          str[0] = '0' + a;
+  38   1          str[1] = '0' + b;
+  39   1          str[2] = ':';
+  40   1          str[3] = '0' + c;
+  41   1          str[4] = '0' + d;
+  42   1          str[5] = ':';
+  43   1          str[6] = '0' + e;
+  44   1          str[7] = '0' + f;
+  45   1          str[8] = '\0';
+  46   1          
+  47   1          write_address(0x00);
+  48   1          while (str[i] != '\0')
+  49   1          {
+  50   2              if (i == 16)
+  51   2                  write_address(0x40);
+  52   2              write_date(str[i]);
+  53   2              i++;
+  54   2          }
+C51 COMPILER V9.57.0.0   BSP_CLOCK                                                         12/23/2022 01:00:27 PAGE 2   
+
+  55   1      
+  56   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    256    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      44
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

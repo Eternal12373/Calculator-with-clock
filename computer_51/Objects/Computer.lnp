@@ -1,0 +1,8 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj",
+".\Objects\bsp_lcd1603.obj",
+".\Objects\bsp_borard.obj",
+".\Objects\bsp_computer.obj",
+".\Objects\bsp_clock.obj" 
+TO ".\Objects\Computer" 
+PRINT(".\Listings\Computer.m51")
